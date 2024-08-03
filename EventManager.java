@@ -52,14 +52,7 @@ public class EventManager {
                 case "sort":
                     sortEventsByDate();
                     break;
-                case "notify":
-                    notifyUpcomingEvents();
-                    break;
-                case "exit":
-                    System.out.println("Exiting the program.");
-                    return;
-                default:
-                    System.out.println("Invalid command.");
+                
             }
         }
     }
