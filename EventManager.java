@@ -222,11 +222,7 @@ public class EventManager {
         }
     }
 
-    private static void notifyUpcomingEvents() {
-        LocalDateTime now = LocalDateTime.now();
-        eventQueue.stream().filter(e -> e.getDateTime().isAfter(now) && e.getDateTime().isBefore(now.plusHours(1)))
-                .forEach(e -> System.out.println("Upcoming event: " + e));
-    }
+    
 
     // Inner class Event
     static class Event implements Serializable {
