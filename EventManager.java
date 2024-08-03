@@ -13,7 +13,6 @@ public class EventManager {
     private static PriorityQueue<Event> eventPriorityQueue = new PriorityQueue<>(Comparator.comparing(Event::getDateTime));
 
     public static void main(String[] args) {
-<<<<<<< HEAD
         Scanner scanner = new Scanner(System.in);
         String command;
 
@@ -26,6 +25,7 @@ public class EventManager {
                     addEvent(scanner);
                     break;
                 case "display":
+                // Scanner scanner = new Scanner(System.in);
                     displayEvent(scanner);
                     break;
                 case "remove":
@@ -40,32 +40,28 @@ public class EventManager {
                 case "findbydate":
                     findEventByDate(scanner);
                     break;
-                    //other developers developing functions
-                // case "save":
-                //     saveEventsToFile(scanner);
-                //     break;
-                // case "load":
-                //     loadEventsFromFile(scanner);
-                //     break;
-                // case "checkconflicts":
-                //     checkEventConflicts();
-                //     break;
-                // case "sort":
-                //     sortEventsByDate();
-                //     break;
-                // case "notify":
-                //     notifyUpcomingEvents();
-                //     break;
-                // case "exit":
-                //     System.out.println("Exiting the program.");
-                //     return;
+                case "save":
+                    saveEventsToFile(scanner);
+                    break;
+                case "load":
+                    loadEventsFromFile(scanner);
+                    break;
+                case "checkconflicts":
+                    checkEventConflicts();
+                    break;
+                case "sort":
+                    sortEventsByDate();
+                    break;
+                case "notify":
+                    notifyUpcomingEvents();
+                    break;
+                case "exit":
+                    System.out.println("Exiting the program.");
+                    return;
                 default:
                     System.out.println("Invalid command.");
             }
         }
-=======
-        // System.out.println("Test");
->>>>>>> 504ea9b2b2996601b07699a8bd9052034566369d
     }
 
     private static void addEvent(Scanner scanner) {
@@ -176,31 +172,101 @@ public class EventManager {
         }
     }
 
+    private static void saveEventsToFile(Scanner scanner) {
+        System.out.println("Enter file name to save events:");
+        String fileName = scanner.nextLine();
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(eventList);
+            System.out.println("Events saved to file successfully!");
+        } catch (IOException e) {
+            System.out.println("Error saving events to file: " + e.getMessage());
+        }
+    }
+
+    private static void loadEventsFromFile(Scanner scanner) {
+        System.out.println("Enter file name to load events:");
+        String fileName = scanner.nextLine();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            eventList = (LinkedList<Event>) ois.readObject();
+            eventBST = new BinarySearchTree();
+            eventQueue = new LinkedList<>();
+            eventPriorityQueue = new PriorityQueue<>(Comparator.comparing(Event::getDateTime));
+            for (Event event : eventList) {
+                eventBST.insert(event);
+                eventQueue.add(event);
+                eventPriorityQueue.add(event);
+            }
+            System.out.println("Events loaded from file successfully!");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading events from file: " + e.getMessage());
+        }
+    }
+
+    private static void checkEventConflicts() {
+        Event previousEvent = null;
+        Queue<Event> tempQueue = new LinkedList<>(eventQueue);
+        while (!tempQueue.isEmpty()) {
+            Event currentEvent = tempQueue.poll();
+            if (previousEvent != null && currentEvent.getDateTime().isBefore(previousEvent.getDateTime().plusHours(1))) {
+                System.out.println("Conflict found: " + previousEvent + " and " + currentEvent);
+            }
+            previousEvent = currentEvent;
+        }
+    }
+
+    private static void sortEventsByDate() {
+        PriorityQueue<Event> tempQueue = new PriorityQueue<>(eventPriorityQueue);
+        while (!tempQueue.isEmpty()) {
+            Event event = tempQueue.poll();
+            System.out.println(event);
+        }
+    }
+
+    private static void notifyUpcomingEvents() {
+        LocalDateTime now = LocalDateTime.now();
+        eventQueue.stream().filter(e -> e.getDateTime().isAfter(now) && e.getDateTime().isBefore(now.plusHours(1)))
+                .forEach(e -> System.out.println("Upcoming event: " + e));
+    }
 
     // Inner class Event
     static class Event implements Serializable {
+        private int id;
+        private String name;
+        private LocalDateTime dateTime;
+        private String description;
 
-
-       public Event(int id, String name, LocalDateTime dateTime, String description) {
-
+        public Event(int id, String name, LocalDateTime dateTime, String description) {
+            this.id = id;
+            this.name = name;
+            this.dateTime = dateTime;
+            this.description = description;
         }
 
         public int getId() {
-        
+            return id;
         }
 
         public void setName(String name) {
-        
+            this.name = name;
         }
 
         public void setDateTime(LocalDateTime dateTime) {
-        
+            this.dateTime = dateTime;
         }
 
         public void setDescription(String description) {
-        
+            this.description = description;
         }
 
+        public LocalDateTime getDateTime() {
+            return dateTime;
+        }
+
+        @Override
+        public String toString() {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            return "Event ID: " + id + ", Name: " + name + ", DateTime: " + dateTime.format(formatter) + ", Description: " + description;
+        }
     }
 
     // Binary Search Tree (BST) for Event
@@ -217,27 +283,106 @@ public class EventManager {
 
         private Node root;
 
+        public void insert(Event event) {
+            root = insertRec(root, event);
+        }
 
+        private Node insertRec(Node root, Event event) {
+            if (root == null) {
+                root = new Node(event);
+                return root;
+            }
 
- 
+            if (event.getDateTime().isBefore(root.event.getDateTime()))
+            if (event.getDateTime().isBefore(root.event.getDateTime())) {
+                root.left = insertRec(root.left, event);
+            } else if (event.getDateTime().isAfter(root.event.getDateTime())) {
+                root.right = insertRec(root.right, event);
+            }
+
+            return root;
+        }
 
         public boolean isEmpty() {
             return root == null;
         }
 
-       public List<Event> findEventsByDate(LocalDate date) {
-
+        public List<Event> findEventsByDate(LocalDate date) {
+            List<Event> events = new ArrayList<>();
+            findByDateRec(root, date, events);
+            return events;
         }
 
+        private void findByDateRec(Node root, LocalDate date, List<Event> events) {
+            if (root != null) {
+                findByDateRec(root.left, date, events);
+                if (root.event.getDateTime().toLocalDate().equals(date)) {
+                    events.add(root.event);
+                }
+                findByDateRec(root.right, date, events);
+            }
+        }
 
-   
+        public void inOrderTraversal() {
+            inOrderRec(root);
+        }
+
+        private void inOrderRec(Node root) {
+            if (root != null) {
+                inOrderRec(root.left);
+                System.out.println(root.event);
+                inOrderRec(root.right);
+            }
+        }
+
+        public boolean removeById(int id) {
+            return removeRec(root, id) != null;
+        }
 
         private Node removeRec(Node root, int id) {
+            if (root == null) {
+                return null;
+            }
 
+            if (id < root.event.getId()) {
+                root.left = removeRec(root.left, id);
+            } else if (id > root.event.getId()) {
+                root.right = removeRec(root.right, id);
+            } else {
+                if (root.left == null) {
+                    return root.right;
+                } else if (root.right == null) {
+                    return root.left;
+                }
+
+                root.event = findMin(root.right).event;
+                root.right = removeRec(root.right, root.event.getId());
+            }
 
             return root;
         }
 
+        private Node findMin(Node root) {
+            while (root.left != null) {
+                root = root.left;
+            }
+            return root;
+        }
 
+        public Event findById(int id) {
+            return findRec(root, id);
+        }
+
+        private Event findRec(Node root, int id) {
+            if (root == null || root.event.getId() == id) {
+                return root != null ? root.event : null;
+            }
+
+            if (id < root.event.getId()) {
+                return findRec(root.left, id);
+            } else {
+                return findRec(root.right, id);
+            }
+        }
     }
 }
