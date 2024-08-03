@@ -13,6 +13,7 @@ public class EventManager {
     private static PriorityQueue<Event> eventPriorityQueue = new PriorityQueue<>(Comparator.comparing(Event::getDateTime));
 
     public static void main(String[] args) {
+<<<<<<< HEAD
         Scanner scanner = new Scanner(System.in);
         String command;
 
@@ -62,6 +63,9 @@ public class EventManager {
                     System.out.println("Invalid command.");
             }
         }
+=======
+        // System.out.println("Test");
+>>>>>>> 504ea9b2b2996601b07699a8bd9052034566369d
     }
 
     private static void addEvent(Scanner scanner) {
